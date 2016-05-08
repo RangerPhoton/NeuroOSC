@@ -110,7 +110,7 @@ void setup()
   numPresets = 0;
 
   // count the number of samples and presets in the /soundSet subfolder
-  File folder = new File(sketchPath("") + soundSet + "/");
+  File folder = new File(sketchPath("") + "/soundsets/"+ soundSet + "/");
   File[] listOfFiles = folder.listFiles();
   for (int i = 0; i < listOfFiles.length; i++)
   {
@@ -128,7 +128,7 @@ void setup()
   // if no samples are found, then end
   if ( numSamples <= 0 )
   {
-    println("no samples found in " + sketchPath("") + soundSet + "/");
+    println("no samples found in " + sketchPath("") + "/soundsets/"+ soundSet + "/");
     println("exiting...");
     exit();
   }
@@ -226,7 +226,7 @@ void setup()
     for ( count = 0; count < numSamples; count++ )
     {
       // create array of SamplePlayers that will run each file
-      sp[count] = new SamplePlayer(ac, new Sample(sketchPath("") + soundSet + "/" + sourceFile[count]));
+      sp[count] = new SamplePlayer(ac, new Sample(sketchPath("") + "/soundsets/"+ soundSet + "/" + sourceFile[count]));
       //sp[count].setLoopPointsFraction(0.0, 1.0);
       sp[count].setKillOnEnd(false);
       sp[count].setLoopType(SamplePlayer.LoopType.LOOP_FORWARDS);
