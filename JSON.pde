@@ -15,7 +15,7 @@ void saveJSON() {
     }
     mixesOut.setJSONArray(m, mix);
   }
-  saveJSONArray(mixesOut, "/soundsets/"+ soundSet + "/data/mixerSets.json");
+  saveJSONArray(mixesOut, "soundsets/"+ soundSet + "/data/mixerSets.json");
   println(mixesOut);
 
 
@@ -26,12 +26,10 @@ void saveJSON() {
     mixWeightsOut.setJSONObject(i, weights);
     //mixWeightsOut.setFloat(m, mixWeights[i]);
   }
-  saveJSONArray(mixWeightsOut, "/soundsets/"+ soundSet + "/data/mixWeights.json");
+  saveJSONArray(mixWeightsOut, "soundsets/"+ soundSet + "/data/mixWeights.json");
   println(mixWeightsOut);
   
 }
-
-
 
 
 JSONArray weightsin;
@@ -39,7 +37,7 @@ JSONArray mixesin;
 
 void loadJSON() {
 
-  mixesin = loadJSONArray("/soundsets/"+ soundSet + "/data/mixerSets.json");
+  mixesin = loadJSONArray("soundsets/"+ soundSet + "/data/mixerSets.json");
 
   for (int m = 0; m < mixesin.size(); m++) {
     if (m == 0) println("Loading MixerSets: ");
@@ -55,7 +53,7 @@ void loadJSON() {
     println();
   }
   
-  weightsin = loadJSONArray("/soundsets/"+ soundSet + "/data/mixWeights.json");
+  weightsin = loadJSONArray("soundsets/"+ soundSet + "/data/mixWeights.json");
 
   for (int i = 0; i < weightsin.size(); i++) {
     if (i == 0) println("Loading mixWeights: ");

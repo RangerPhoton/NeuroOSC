@@ -19,7 +19,7 @@ void setBG()
   // load and crop background image to fit
   if (bgimage) {
     try { 
-      img = loadImage(sketchPath("") + "/soundsets/"+ soundSet + "/" + "bg.jpg");
+      img = loadImage(sketchPath("") + "soundsets/"+ soundSet + "/" + "bg.jpg");
     }
     catch(Exception e) { 
       println("Exception while attempting to load image!"); 

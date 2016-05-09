@@ -1,25 +1,18 @@
 
-//import java.util.Arrays; 
 import beads.*;
 import oscP5.*;
 import netP5.*;
 import controlP5.*;
 import java.util.*;
+//import java.util.Arrays; 
 
-ControlP5 cp5;
-
-controlP5.ScrollableList d;
-
-//variables needed for osc
-OscP5 oscP5;
-NetAddress myRemoteLocation;
-
-AudioContext ac;
-
+//variables for audio setup in Beads
 int numSamples = 0; // how many samples are being loaded?
 int numPresets = 0; //how many presets have been stored? 
 String sourceFile[]; // an array that will contain our sample filenames
 
+//Beads setup
+AudioContext ac;
 SamplePlayer sp[];
 Gain g[];
 Glide gainValue[];
@@ -40,16 +33,6 @@ String[] sounds = {"Tibetan Bowls", "Tibetan Choir", "Indian Drone", "Tanpura", 
 int soundSetSelected = 0;
 String soundSet = sounds[soundSetSelected];
 
-//play flag to enable/disable audio processing and dynamic drawing
-boolean play = false; //set true to play soundset immedately on startup
-
-
-//variables for storing, blending and saving gain presets
-float[][] mixerSets; //storage for multiple mixer settings
-float[] mixMixer; //target array for combining mixerSet gain values, drives sample player gain inputs
-float[] mixWeights = {0.5, 0.5, 0.5, 0.5};  //weighting values for combining mixerSets
-float mixMaster = 0.5;
-
 void setup()
 {
   size(330, 330);
@@ -59,58 +42,16 @@ void setup()
 
   soundSet = sounds[soundSetSelected];
 
-  PFont pfont = createFont("Arial", 20, true); // use true/false for smooth/no-smooth
-  ControlFont font = new ControlFont(pfont, 241);
-
-  cp5 = new ControlP5(this);
-  List l = Arrays.asList(sounds);
-  /* add a ScrollableList, by default it behaves like a DropdownList */
-  d = cp5.addScrollableList("dropdown")
-    .setColorBackground(color(0, 0, 0))
-    .setColorForeground(color(60, 60, 60))
-    .setPosition(0, 0)
-    .setSize(120, 330)
-    .setBarHeight(22)
-    .setItemHeight(16)
-    .addItems(l)
-    .close()
-    .setCaptionLabel(soundSet)
-    .setType(ScrollableList.DROPDOWN) // currently supported DROPDOWN and LIST
-    ;
-
-  CColor c = new CColor();
-  c.setBackground(color(0, 0, 0));
-  // (3)
-  // change the font and content of the captionlabels 
-  cp5.getController("dropdown")
-    .getCaptionLabel()     
-    .setFont(font)
-    .toUpperCase(false)
-    .setSize(13)
-    ;
-  cp5.getController("dropdown")
-    .getValueLabel()
-    .setFont(font)
-    .toUpperCase(false)
-    .setSize(12)
-    ;
-
-  // adjust the location of a caption label using the 
-  // style property of a controller.
-  d.getCaptionLabel().getStyle().marginLeft = 2;
-  d.getCaptionLabel().getStyle().marginTop = 4;
-  d.getValueLabel().getStyle().marginLeft = 2;
-  d.getValueLabel().getStyle().marginTop = 2;
-
-  //ControlP5.printPublicMethodsFor(ScrollableList.class);
+  setupDropdown();
 
   ac = new AudioContext(); // create our AudioContext
+
 
   numSamples = 0;
   numPresets = 0;
 
   // count the number of samples and presets in the /soundSet subfolder
-  File folder = new File(sketchPath("") + "/soundsets/"+ soundSet + "/");
+  File folder = new File(sketchPath("") + "soundsets/"+ soundSet + "/");
   File[] listOfFiles = folder.listFiles();
   for (int i = 0; i < listOfFiles.length; i++)
   {
@@ -125,10 +66,10 @@ void setup()
     }
   }
 
-  // if no samples are found, then end
+  // if no samples are found, then end with an error
   if ( numSamples <= 0 )
   {
-    println("no samples found in " + sketchPath("") + "/soundsets/"+ soundSet + "/");
+    println("no samples found in " + sketchPath("") + "soundsets/"+ soundSet + "/");
     println("exiting...");
     exit();
   }
@@ -152,7 +93,7 @@ void setup()
   }
 
 
-  // set up arrays to store multi-channel gain presets
+  // set up arrays to store multi-channel gain presets and the mix mixer target array
   mixerSets = new float[numPresets][numSamples];
   mixMixer = new float[numSamples];
   for (int i = 0; i < numSamples; i++ ) {
@@ -161,6 +102,7 @@ void setup()
 
 
   //either load preset files or generate defaults
+  //auto-loading is the eventual desired behavior once everything is working right
   if (numPresets > 0) {
     sourceFile = new String[numSamples];
     int preset = 0;
@@ -171,7 +113,7 @@ void setup()
         if ( listOfFiles[i].getName().endsWith(".json") )
         {
           sourceFile[preset] = listOfFiles[i].getName();
-          //add json file loading code here
+          //eventually add json file loading code here
           preset++;
         }
       }
@@ -196,7 +138,7 @@ void setup()
 
 
 
-
+//Audio setup for Beads library
   // setup arrays of unit generators to accomodate the number of samples to be loaded
   g = new Gain[numSamples];
   gainValue = new Glide[numSamples];
@@ -226,7 +168,7 @@ void setup()
     for ( count = 0; count < numSamples; count++ )
     {
       // create array of SamplePlayers that will run each file
-      sp[count] = new SamplePlayer(ac, new Sample(sketchPath("") + "/soundsets/"+ soundSet + "/" + sourceFile[count]));
+      sp[count] = new SamplePlayer(ac, new Sample(sketchPath("") + "soundsets/"+ soundSet + "/" + sourceFile[count]));
       //sp[count].setLoopPointsFraction(0.0, 1.0);
       sp[count].setKillOnEnd(false);
       sp[count].setLoopType(SamplePlayer.LoopType.LOOP_FORWARDS);
@@ -253,7 +195,8 @@ void setup()
     exit();
   }
 
-  surfaceWidth = max((numSamples) * 30 + 30, 330);
+//adapt window to fit UI
+  surfaceWidth = max((numSamples) * 30 + 30, 330);  
   if (drawControls) surfaceHeight = 330 + (numPresets*20);
   else surfaceHeight = 330;
   surface.setSize(surfaceWidth, surfaceHeight);

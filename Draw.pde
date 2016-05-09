@@ -11,41 +11,54 @@ int blankline = 140;
 int surfaceWidth;
 int surfaceHeight;
 
-//variables for mouse behaviors
+//variables for mouse dragging behaviors - locking permits off-axis mouse moves on sliders
 boolean lockMouseX = false;
 boolean lockMouseY = false;
 float xOffset = 0.0; 
 float yOffset = 0.0; 
-int channel = -1; //selected channel, -1 is none
+
+//variables for mouse hover behaviors
+int channel = -1; //active channel, -1 is none
 int brighten = 0; //mouse pressed color
 int darken = 0; //ghosted
 
-boolean OSC = true;
+//variables for storing, blending and saving gain presets
+float[][] mixerSets; //storage for multiple mixer settings
+float[] mixMixer; //target array for combining the mixerSet arrays - the result is then used to set the actual sample player gain inputs
+float[] mixWeights = {0.5, 0.5, 0.5, 0.5};  //weighting values for combining mixerSets - this array is driven by the 
+float mixMaster = 0.5; // Master output gain 
 
-int currPreset = 0;
-int nextMix;
-
-int map = 1;
-int lastmap = 3;
-int eq = 1;
-int lasteq = 3;
-boolean constrainSliders = true;
-
+//variables for 2D mouse mixer
 float mixMixerX = 0.5;
 float mixMixerY = 0.5;
 int mixMixerDotX;
 int mixMixerDotY;
 
+//variables for UI display states
 boolean scaleUI = false;
 boolean drawControls = false;
 boolean controlHandle = false;
+boolean constrainSliders = true;
+
+//variables for managing internal states
+boolean OSC = true;
+int nextMix;
+int map = 1;
+int lastmap = 3;
+int eq = 1;
+int lasteq = 3;
+
+//play flag to enable/disable audio processing and dynamic drawing
+boolean play = false; //set true here to play soundset immedately on startup
+
 
 void draw()
 {
   background(off);
   if (bgimage) image (img, -targetleft, -targettop);
 
-  //apply mapping and weight equations to mixes
+  //experimental - applying mapping and weighting equations to mixes
+  //it may be possible to do all of this with the map() function, and easily store maps in a JSON array
   if (!drawControls || (mixMixes2D && !replaceMix)) {
     if (map == 1 && !mixMixes) {
       mixWeights[0] = 1-mixMixerY;
@@ -66,6 +79,7 @@ void draw()
       mixWeights[3] = map(mixMixerX, 0.5, 0, 0, 0.5);
     }
 
+  
     for (int i = 0; i < numSamples; i++) {
       mixMixer[i] = 0;
       if (eq == 1) {
