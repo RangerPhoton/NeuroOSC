@@ -7,7 +7,8 @@ import java.util.*;
 //import java.util.Arrays; 
 
 //variables for audio setup in Beads
-int numSamples = 0; // how many samples are being loaded?
+int numFolders = 0; // how many soundSet subfolders are there in the soundsets/ folder?
+int numSamples = 0; // how many samples are in the current folder?
 int numPresets = 0; //how many presets have been stored? 
 String sourceFile[]; // an array that will contain our sample filenames
 
@@ -26,12 +27,14 @@ Glide gainValueMaster;
 //Glide delayGlide;
 
 // pointers to soundsets, placed in subfolders of the sketch
-String[] sounds = {"Tibetan Bowls", "Tibetan Choir", "Indian Drone", "Tanpura", "Digiridrone", 
-  "Orchestron", "Aeternitas", "Canyon", "Shruti Box", "Desert Wind", "Summer Night", "Fairy Pond", 
-  "Jungle Life", "Tropical Rain", "Crystal Spring", "Distant Thunder", "Fireplace", "Furry Friend", 
-  "Comfy Place"};
+//String[] soundSets 
+// = {"Tibetan Bowls", "Tibetan Choir", "Indian Drone", "Tanpura", "Digiridrone", 
+// "Orchestron", "Aeternitas", "Canyon", "Shruti Box", "Desert Wind", "Summer Night", "Fairy Pond", 
+// "Jungle Life", "Tropical Rain", "Crystal Spring", "Distant Thunder", "Fireplace", "Furry Friend", 
+// "Comfy Place"};
+String[] soundSets = new String[0]; //= {"test"};
 int soundSetSelected = 0;
-String soundSet = sounds[soundSetSelected];
+String soundSet ; // = soundSets[soundSetSelected];
 
 void setup()
 {
@@ -40,17 +43,27 @@ void setup()
   oscP5 = new OscP5(this, incomingPort);
   myRemoteLocation = new NetAddress(ipAddress, outgoingPort);
 
-  soundSet = sounds[soundSetSelected];
-
-  setupDropdown();
-
-  ac = new AudioContext(); // create our AudioContext
-
-
+  numFolders = 0;
   numSamples = 0;
   numPresets = 0;
 
-  // count the number of samples and presets in the /soundSet subfolder
+  // scan the soundsets/ folder and generate a list of soundSet subfolders
+  // select the first soundset and populate the soundset selection dropdown
+  File subFolder = new File(sketchPath("") + "soundsets/");
+  File[] listOfFolders = subFolder.listFiles();
+  for (int i = 0; i < listOfFolders.length; i++)
+  {
+    if (listOfFolders[i].isDirectory())
+    {
+      numFolders++; 
+      soundSets = splice(soundSets, listOfFolders[i].getName(), numFolders-1);
+      println(numFolders+": listitem"+i+": "+listOfFolders[i].getName());
+    }
+  }  
+  soundSet = soundSets[soundSetSelected];
+  setupDropdown();
+
+  // count the number of samples and presets in the selected soundSet subfolder
   File folder = new File(sketchPath("") + "soundsets/"+ soundSet + "/");
   File[] listOfFiles = folder.listFiles();
   for (int i = 0; i < listOfFiles.length; i++)
@@ -60,8 +73,6 @@ void setup()
       if ( listOfFiles[i].getName().endsWith(".mp3") )
       {
         numSamples++;
-      } else if (listOfFiles[i].getName().endsWith(".json")) {
-        numPresets++;
       }
     }
   }
@@ -101,25 +112,25 @@ void setup()
   }   
 
 
-  //either load preset files or generate defaults
-  //auto-loading is the eventual desired behavior once everything is working right
-  if (numPresets > 0) {
-    sourceFile = new String[numSamples];
-    int preset = 0;
-    for (int i = 0; i < listOfFiles.length; i++)
-    {
-      if (listOfFiles[i].isFile())
-      {
-        if ( listOfFiles[i].getName().endsWith(".json") )
-        {
-          sourceFile[preset] = listOfFiles[i].getName();
-          //eventually add json file loading code here
-          preset++;
-        }
-      }
-    }
-  } else {
-    println("No preset files found in soundSet folder.");
+  // in process: load preset files or generate defaults
+  // auto-loading is the eventual desired behavior once everything is working right
+  //if (numPresets > 0) {
+  //  sourceFile = new String[numSamples];
+  //  int preset = 0;
+  //  for (int i = 0; i < listOfFiles.length; i++)
+  //  {
+  //    if (listOfFiles[i].isFile())
+  //    {
+  //      if ( listOfFiles[i].getName().endsWith(".json") )
+  //      {
+  //        sourceFile[preset] = listOfFiles[i].getName();
+  //        //eventually add json file loading code here
+  //        preset++;
+  //      }
+  //    }
+  //  }
+  //} else {
+    //println("No preset files found in soundSet folder.");
     println("Generating default presets for " + numSamples + " samples.");
 
     numPresets = 4;
@@ -134,12 +145,13 @@ void setup()
       //print(mixerSets[2][i]+" ");
       //if (i == numSamples-1) println();
     }
-  }
+  //}
 
 
 
-//Audio setup for Beads library
+  // Audio setup for Beads library
   // setup arrays of unit generators to accomodate the number of samples to be loaded
+  ac = new AudioContext();
   g = new Gain[numSamples];
   gainValue = new Glide[numSamples];
   sp = new SamplePlayer[numSamples];

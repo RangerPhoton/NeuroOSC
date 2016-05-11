@@ -35,7 +35,7 @@ void setupDropdown(){
   ControlFont font = new ControlFont(pfont, 241);
 
   cp5 = new ControlP5(this);
-  List l = Arrays.asList(sounds);
+  List l = Arrays.asList(soundSets);
   /* add a ScrollableList, by default it behaves like a DropdownList */
   d = cp5.addScrollableList("dropdown")
     .setColorBackground(color(0, 0, 0))

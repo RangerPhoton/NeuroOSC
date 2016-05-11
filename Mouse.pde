@@ -46,9 +46,9 @@ void mousePressed() {
   //old title-bar soundset selection (replaced with ControlP5 dropdown)
   //if (mouseY < 20 && mouseX < width-100 && mouseX > 100) {
   //   ac.stop();
-  //   if (soundSetSelected < sounds.length - 1) soundSetSelected = soundSetSelected + 1;
+  //   if (soundSetSelected < soundSets.length - 1) soundSetSelected = soundSetSelected + 1;
   //   else soundSetSelected = 0;
-  //   soundSet = sounds[soundSetSelected];
+  //   soundSet = soundSets[soundSetSelected];
   //   setup();
   //}
   

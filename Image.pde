@@ -5,7 +5,7 @@ PImage img;
 int targetleft;
 int targettop;
 
-void scaleUI() {
+void scaleUI() { //avoid two-stage resize when aspect changes
   bgimage = false;
   background(off);
   surface.setSize(surfaceWidth, surfaceHeight);
@@ -16,7 +16,7 @@ void scaleUI() {
 
 void setBG()
 {
-  // load and crop background image to fit
+  // load and crop background image to fit window size
   if (bgimage) {
     try { 
       img = loadImage(sketchPath("") + "soundsets/"+ soundSet + "/" + "bg.jpg");
