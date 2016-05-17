@@ -1,4 +1,3 @@
-
 import beads.*;
 import oscP5.*;
 import netP5.*;
@@ -46,9 +45,10 @@ void setup()
   numFolders = 0;
   numSamples = 0;
   numPresets = 0;
-
+  soundSets = new String[0];  //clear global variable so we don't keep splicing onto the dropdown
+  //eventually move out of setup function and do this properly
+  
   // scan the soundsets/ folder and generate a list of soundSet subfolders
-  // select the first soundset and populate the soundset selection dropdown
   File subFolder = new File(sketchPath("") + "soundsets/");
   File[] listOfFolders = subFolder.listFiles();
   for (int i = 0; i < listOfFolders.length; i++)
@@ -60,6 +60,7 @@ void setup()
       println(numFolders+": listitem"+i+": "+listOfFolders[i].getName());
     }
   }  
+  // select the first soundset and populate the soundset selection dropdown
   soundSet = soundSets[soundSetSelected];
   setupDropdown();
 
@@ -102,7 +103,7 @@ void setup()
       }
     }
   }
-
+  sourceFile = sort(sourceFile);
 
   // set up arrays to store multi-channel gain presets and the mix mixer target array
   mixerSets = new float[numPresets][numSamples];
@@ -147,8 +148,6 @@ void setup()
     }
   //}
 
-
-
   // Audio setup for Beads library
   // setup arrays of unit generators to accomodate the number of samples to be loaded
   ac = new AudioContext();
@@ -161,6 +160,9 @@ void setup()
   gainValueMaster.setGlideTime(200);
   gMaster = new Gain(ac, 1, gainValueMaster);
   ac.out.addInput(gMaster);
+
+  //println(numSamples+" "+gainValue.length+" "+mixMixer.length);
+
 
   /*
   // set up our delay - this is just for taste, to fill out the texture  

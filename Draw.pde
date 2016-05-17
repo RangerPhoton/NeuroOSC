@@ -79,7 +79,12 @@ void draw()
       mixWeights[3] = map(mixMixerX, 0.5, 0, 0, 0.5);
     }
 
-  
+    // variables for Gaussian function 
+    float center; //channel position at peak amplitude
+    float sigma; //curve width
+    float xfloor = 1/numSamples/2; // limit left edge position 
+    float xceil = numSamples-1;  //limit right edge position
+    
     for (int i = 0; i < numSamples; i++) {
       mixMixer[i] = 0;
       if (eq == 1) {
@@ -88,19 +93,27 @@ void draw()
           mixMixer[i] += (mixerSets[mix][i]*2-1)*(mixWeights[mix]);
           if (constrainSliders) mixMixer[i] = constrain(mixMixer[i], 0, 1);
         }
-      } else if (eq == 2) {
+      } 
+      else if (eq == 2) {
         for (int mix = 0; mix < mixerSets.length; mix++) 
         {
           mixMixer[i] += ((mixerSets[mix][i])*(mixWeights[mix]));
         }
         mixMixer[i] = mixMixer[i]-0.5;
         if (constrainSliders) mixMixer[i] = constrain(mixMixer[i], 0, 1);
-      } else if (eq == 3) {
+      } 
+      else if (eq == 3) {
         for (int mix = 0; mix < mixerSets.length; mix++) 
         {
           mixMixer[i] += map(mixerSets[mix][i], 0, 1, -0.5, 0.5)*mixWeights[mix];
         }
         mixMixer[i] = mixMixer[i]+0.5;
+        if (constrainSliders) mixMixer[i] = constrain(mixMixer[i], 0, 1);
+      } 
+      else if (eq == 4) {   //gaussian function - bypasses mix presets and weight mapping
+        center = map(mixMixerX, 0, 1, xfloor, xceil); //map to number of channels, align peak at first and last channel
+        sigma = map(mixMixerY, 0, 1, 1.2, 4); //adjust min and max curve width
+        mixMixer[i] = ( 1 / sigma*(sqrt(TAU) )) * ( exp(-sq(i - center) / (2*sq(sigma )) ) );
         if (constrainSliders) mixMixer[i] = constrain(mixMixer[i], 0, 1);
       }
 
@@ -306,6 +319,7 @@ void draw()
   for (i = 0; i <= numSamples; i++)
   {
     //Update gain values from mixMixer
+    //print(i+" ");
     if (i < numSamples) gainValue[i].setValue(constrain(mixMixer[i], 0, 1));
 
 
