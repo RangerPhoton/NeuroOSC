@@ -440,9 +440,8 @@ void draw()
       // * note addition of scale and shift factors
       int vOffset = (int)((1 + ac.out.getValue(0, buffIndex)*vscale) * (height+vshift) / 2); 
       //draw into Processing's convenient 1-D array of pixels
-      // * note addition of constraints to keep pixels within window given shift value
-      vOffset = constrain(vOffset, 0, height);
-      pixels[vOffset * width + p] = on; //changed height to width - waveform now draws properly at any aspect without out-of-bounds errors!
+      // * note addition of constraint to keep pixels within window's total pixel count    
+      pixels[constrain(vOffset * width + p, 0, width*height-1)] = on;
       //if(first) {
       //  println(width + " " + height + " " + windowAspect);
       //  first = false;

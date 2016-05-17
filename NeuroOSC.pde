@@ -214,6 +214,7 @@ void setup()
   if (drawControls) surfaceHeight = 330 + (numPresets*20);
   else surfaceHeight = 330;
   surface.setSize(surfaceWidth, surfaceHeight);
+  print(width*height);
 
   setBG();
 
