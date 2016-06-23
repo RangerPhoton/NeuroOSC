@@ -3,8 +3,9 @@ color off = color(0, 0, 0);
 color on = color(200, 200, 200);
 color label = color(200, 200, 200);
 //using integers for slider colors (resulting in grayscale), simplify math for hover colors
-int blank = 120; 
-int blankline = 140;
+int blank = 140; 
+int blankline = 160;
+int sliderAlpha = 160;
 
 //variables for surface size, so we can change it based on channel count
 //also used for waveform size calculation
@@ -28,11 +29,16 @@ float[] mixMixer; //target array for combining the mixerSet arrays - the result 
 float[] mixWeights = {0.5, 0.5, 0.5, 0.5};  //weighting values for combining mixerSets - this array is driven by the 
 float mixMaster = 0.5; // Master output gain 
 
-//variables for 2D mouse mixer
+//variables for 3D input mixer
 float mixMixerX = 0.5;
 float mixMixerY = 0.5;
+float mixMixerZ = 0;
+
 int mixMixerDotX;
 int mixMixerDotY;
+int mixMixerDotZ;
+
+boolean zAxis = false;
 
 //variables for UI display states
 boolean scaleUI = false;
@@ -84,7 +90,7 @@ void draw()
     float sigma; //curve width
     float xfloor = 1/numSamples/2; // limit left edge position 
     float xceil = numSamples-1;  //limit right edge position
-    
+
     for (int i = 0; i < numSamples; i++) {
       mixMixer[i] = 0;
       if (eq == 1) {
@@ -93,24 +99,21 @@ void draw()
           mixMixer[i] += (mixerSets[mix][i]*2-1)*(mixWeights[mix]);
           if (constrainSliders) mixMixer[i] = constrain(mixMixer[i], 0, 1);
         }
-      } 
-      else if (eq == 2) {
+      } else if (eq == 2) {
         for (int mix = 0; mix < mixerSets.length; mix++) 
         {
           mixMixer[i] += ((mixerSets[mix][i])*(mixWeights[mix]));
         }
         mixMixer[i] = mixMixer[i]-0.5;
         if (constrainSliders) mixMixer[i] = constrain(mixMixer[i], 0, 1);
-      } 
-      else if (eq == 3) {
+      } else if (eq == 3) {
         for (int mix = 0; mix < mixerSets.length; mix++) 
         {
           mixMixer[i] += map(mixerSets[mix][i], 0, 1, -0.5, 0.5)*mixWeights[mix];
         }
         mixMixer[i] = mixMixer[i]+0.5;
         if (constrainSliders) mixMixer[i] = constrain(mixMixer[i], 0, 1);
-      } 
-      else if (eq == 4) {   //gaussian function - bypasses mix presets and weight mapping
+      } else if (eq == 4) {   //gaussian function - bypasses mix presets and weight mapping
         center = map(mixMixerX, 0, 1, xfloor, xceil); //map to number of channels, align peak at first and last channel
         sigma = map(mixMixerY, 0, 1, 1.2, 4); //adjust min and max curve width
         mixMixer[i] = ( 1 / sigma*(sqrt(TAU) )) * ( exp(-sq(i - center) / (2*sq(sigma )) ) );
@@ -130,19 +133,36 @@ void draw()
   else mixMixerDotY = round(map(1-mixMixerY, 0, 1, 40, height-14))-5;
   ellipse(mixMixerDotX, mixMixerDotY, (ac.out.getValue(0, 1)*80)+2, (ac.out.getValue(0, 1)*80)+2); 
 
-  if (drawControls) {
-    if (height > 330){
-    //Draw reticule and labels for 2D mixer
-    stroke(off);
-    line(width/2, 34, width/2, 182);
-    line(14, 108, width-15, 108);
+  //draw moving distance ring 
+  if (zAxis==true && mixMixerZ>0) {
+    stroke(on);
+    stroke(on, mixMixerZ*200);
+    strokeWeight(3);
     noFill();
-    rect(14, 34, width-14-15, 182-34 );
-    textSize(11);
-    textAlign(RIGHT, CENTER);
-    text(round(mixMixerX*100), width-16, 106);
-    textAlign(CENTER, TOP);
-    text(round((mixMixerY)*100), width/2, 34);
+    float size = 1-mixMixerZ;
+    ellipse(mixMixerDotX, mixMixerDotY, map(size, 0, 1, 150, 15), map(size, 0, 1, 150, 15)); 
+    strokeWeight(2);
+    if(mixMixerZ>.05) ellipse(mixMixerDotX, mixMixerDotY, map(size, 0, 1, 100, 10), map(size, 0, 1, 100, 10)); 
+    strokeWeight(1);
+    if(mixMixerZ>.10) ellipse(mixMixerDotX, mixMixerDotY, map(size, 0, 1, 50, 5), map(size, 0, 1, 50, 5));
+  }
+
+  if (drawControls) {
+    if (height > 330) {
+      //Draw reticule and labels for 2D mixer
+      strokeWeight(1);
+      stroke(off);
+      line(width/2, 34, width/2, 182);
+      line(14, 108, width-15, 108);
+      noFill();
+      rect(14, 34, width-14-15, 182-34 );
+      textSize(11);
+      textAlign(RIGHT, CENTER);
+      text(round(mixMixerX*100), width-16, 106);
+      textAlign(CENTER, TOP);
+      text(round((mixMixerY)*100), width/2, 34);
+      textAlign(CENTER, CENTER);
+      text(round((mixMixerZ)*100), width/2, 106);
     }
 
     //mouse-over behaviors
@@ -328,32 +348,32 @@ void draw()
     if (drawControls && i < numSamples) {
       strokeWeight(2);
       if (channel == i) {
-        stroke(180 - darken + brighten);
-        fill(off);
+        stroke(180 - darken + brighten, sliderAlpha);
+        fill(off, sliderAlpha);
       } else {
-        stroke(blankline - darken);
-        fill(off);
+        stroke(blankline - darken, sliderAlpha);
+        fill(off, sliderAlpha);
       }
       rect(4 + i * 30, 230, 20, 50, 6, 6, 6, 6); //outline
       noStroke();
-      fill(blank - darken);
+      fill(blank - darken, sliderAlpha);
       if (!constrainSliders) rect(6 + i * 30, 279-(mixMixer[i]*47), 17, (mixMixer[i]*47), 4, 4, 4, 4); //unconstrained value
 
       if (channel == i) {
         //println(180 + brighten);
         //stroke(180 - darken + brighten);
-        fill(180 - darken + brighten);
+        fill(180 - darken + brighten, sliderAlpha);
       } else {
         //stroke(blank - darken);
-        fill(blank - darken);
+        fill(blank - darken, sliderAlpha);
       }
       rect(6 + i * 30, 279-(constrain(mixMixer[i], 0, 1)*47), 17, (constrain(mixMixer[i], 0, 1)*47), 4, 4, 4, 4); //constrained gain value
       //else rect(6 + i * 30, 279-(mixMixer[i]*47), 17, mixMixer[i]*47, 4, 4, 4, 4);
-      stroke(blankline);
-      fill(on);
+      stroke(blankline, sliderAlpha);
+      fill(on, sliderAlpha);
       ellipse(i * 30 + 14, 205, (sp[i].getValue(0, i)*gainValue[i].getValue()*50)+1, (sp[i].getValue(0, i)*gainValue[i].getValue()*50)+1);
       ellipse(i * 30 + 14, 315, (sp[i].getValue(0, i)*50)+1, (sp[i].getValue(0, i)*50)+1);
-      fill(label);
+      fill(label, sliderAlpha);
       textAlign(CENTER, CENTER);
       textSize(11);
       text(round(mixMixer[i]*100), i * 30 + 14, 220);
@@ -364,29 +384,29 @@ void draw()
     //Draw channel strip for master gain
     if (drawControls && i == numSamples) {
       strokeWeight(2);
-      stroke(blankline);
-      fill(on);
+      stroke(blankline, sliderAlpha);
+      fill(on, sliderAlpha);
       ellipse(i * 30 + 14, 205, (ac.out.getValue(0, 1)*50)+1, (ac.out.getValue(0, 1)*50)+1);
       if (channel == numSamples) {
-        stroke(180 - darken + brighten);
-        fill(off);
+        stroke(180 - darken + brighten, sliderAlpha);
+        fill(off, sliderAlpha);
       } else {
-        stroke(blankline - darken);
-        fill(off);
+        stroke(blankline - darken, sliderAlpha);
+        fill(off, sliderAlpha);
       }
       rect(4 + i * 30, 230, 20, 50, 6, 6, 6, 6);
       noStroke();
       if (channel == numSamples) {
         //println(180 + brighten);
         //stroke(180 - darken + brighten);
-        fill(180 - darken + brighten);
+        fill(180 - darken + brighten, sliderAlpha);
       } else {
         //stroke(blank - darken);
-        fill(blank - darken);
+        fill(blank - darken, sliderAlpha);
       }
       //rect(6 + i * 30, 279-(gainValueMaster.getValue()*47), 17, (gainValueMaster.getValue()*47), 4, 4, 4, 4);    
       rect(6 + i * 30, 279-(mixMaster*47), 17, (mixMaster*47), 4, 4, 4, 4);    
-      fill(label);
+      fill(label, sliderAlpha);
       textSize(11);
       text(round(mixMaster*100), i * 30 + 14, 220);
       text(round(gainValueMaster.getValue()*100), i * 30 + 14, 312);
@@ -396,6 +416,7 @@ void draw()
   }
 
   gainValueMaster.setValue(mixMaster); 
+  reverbGlide.setValue(mixMixerZ);
 
   //send outgoing OSC messages - 
   //hack: brute force experiments
@@ -426,8 +447,8 @@ void draw()
   if (play) {
     int vshift = 16; //shift waveform up or down in window
     if (drawControls) {
-       if (height > 330) vshift = -74-(numPresets*30);
-       else vshift = -114;
+      if (height > 330) vshift = -74-(numPresets*30);
+      else vshift = -114;
     }
 
     float vscale = 1; //scale waveform height

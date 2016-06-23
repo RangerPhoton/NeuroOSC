@@ -21,10 +21,30 @@ void oscEvent(OscMessage theOscMessage)
 
     int i;
     float oscFloatValue = theOscMessage.get(0).floatValue(); //sets the incoming value of the OSC message to the oscValue variable
-    oscFloatValue = min(oscFloatValue, 1);
+    oscFloatValue = max(min(oscFloatValue, 1), 0);
 
-    if (theOscMessage.addrPattern().equals("/mix/x") == true) mixMixerX = oscFloatValue;
-    if (theOscMessage.addrPattern().equals("/mix/y") == true) mixMixerY = 1-oscFloatValue;
+    if (theOscMessage.addrPattern().equals("/mix/x")) mixMixerX = 1-oscFloatValue;
+    if (theOscMessage.addrPattern().equals("/mix/y")) mixMixerY = 1-oscFloatValue;
+    if (theOscMessage.addrPattern().equals("/mix/z")) {
+      if (!zAxis) zAxis = true;
+      mixMixerZ = 1-oscFloatValue;
+      mixMaster = map(oscFloatValue, 0, 1, 0.2, 0.7);
+    }
+    
+    if (theOscMessage.addrPattern().equals("/leap/x")) mixMixerX = oscFloatValue;
+    if (theOscMessage.addrPattern().equals("/leap/y")) mixMixerY = oscFloatValue;
+    if (theOscMessage.addrPattern().equals("/leap/z")) {
+      if (!zAxis) zAxis = true;
+      mixMixerZ = oscFloatValue;
+      mixMaster = map(1-oscFloatValue, 0, 1, 0.1, 0.7);
+    }
+    if (theOscMessage.addrPattern().equals("/metaverse/x")) mixMixerX = oscFloatValue;
+    if (theOscMessage.addrPattern().equals("/metaverse/y")) mixMixerY = oscFloatValue;
+    if (theOscMessage.addrPattern().equals("/metaverse/z")) {
+      if (!zAxis) zAxis = true;
+      mixMixerZ = 1-oscFloatValue;
+      mixMaster = map(oscFloatValue, 0, 1, 0.1, 0.7);
+    }
 
     if (!mixMixes && !mixMixes2D) {
       for (i = 0; i < numSamples; i++) {

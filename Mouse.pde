@@ -16,6 +16,11 @@ float mouseScalingX = 100; //set equal to slider height for 1:1 drag ratio
 
 
 void mousePressed() {
+  if (mouseButton == RIGHT) {
+    zAxis = !zAxis;
+    println(zAxis);
+  }
+  
   yOffset = mouseY; 
   xOffset = mouseX; 
 
@@ -101,7 +106,7 @@ void mousePressed() {
     } else if (mouseY < 330 || mouseX < 210) {
       mixMixes = false;
       //constrainSliders = true;
-    }
+    } 
     
     //mapping and equation controls
     if (mouseY > 330 && mouseY < 350 && mouseX > 210) constrainSliders = !constrainSliders; 
@@ -187,4 +192,11 @@ void mouseReleased() {
     //replaceMix = 
     storeMix = false;
   brighten = 0;
+}
+
+void mouseWheel(MouseEvent event) {
+  float e = event.getCount();
+  if (!zAxis) zAxis = true;
+  mixMixerZ = max(min(mixMixerZ+(e/100), 1), 0);
+  //println(mixMixerZ);
 }

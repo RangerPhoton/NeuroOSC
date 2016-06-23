@@ -13,11 +13,16 @@ String sourceFile[]; // an array that will contain our sample filenames
 
 //Beads setup
 AudioContext ac;
-SamplePlayer sp[];
-Gain g[];
-Glide gainValue[];
-Gain gMaster;
-Glide gainValueMaster;
+SamplePlayer sp[]; //array of sample players
+Gain g[]; //array of gains for sample players
+Glide gainValue[];  //array of gain controllers for sample players
+Gain gMaster; // master gain
+Glide gainValueMaster; // master gain controller
+
+Reverb reverb; // our Reverberation unit generator
+Gain reverbGain; //reverb gain
+Glide reverbGlide; // reverb gain controller
+
 
 // these objects allow us to add a delay effect
 //TapIn delayIn;
@@ -32,7 +37,7 @@ Glide gainValueMaster;
 // "Jungle Life", "Tropical Rain", "Crystal Spring", "Distant Thunder", "Fireplace", "Furry Friend", 
 // "Comfy Place"};
 String[] soundSets = new String[0]; //= {"test"};
-int soundSetSelected = 0;
+int soundSetSelected = 13;
 String soundSet ; // = soundSets[soundSetSelected];
 
 void setup()
@@ -161,6 +166,20 @@ void setup()
   gMaster = new Gain(ac, 1, gainValueMaster);
   ac.out.addInput(gMaster);
 
+  reverb = new Reverb(ac, 1); // create a new reverb with a single output channel
+  reverb.setSize(0.7); // set the room size (between 0 and 1) 0.5 is the default
+  reverb.setDamping(0.5); // set the damping (between 0 and 1) - the higher the dampening, the fewer resonant high frequencies
+  // You can also control a Reverb's early reflections and late reverb
+  // to do so, use r.setEarlyReflectionsLevel(0-1); or r.setLateReverbLevel(0-1);
+
+  reverbGlide = new Glide(ac, 0.0, 50);
+  reverbGain = new Gain(ac, 1, reverbGlide);
+
+  reverb.addInput(reverbGain); // connect the gain to the reverb
+
+  ac.out.addInput(reverb); // connect the Reverb to the AudioContext
+
+
   //println(numSamples+" "+gainValue.length+" "+mixMixer.length);
 
 
@@ -196,6 +215,7 @@ void setup()
 
       // finally, connect this chain to the delay and to the main out    
       //delayIn.addInput(g[count]);
+      reverbGain.addInput(g[count]); // connect the waveplayer to the gain
 
       gMaster.addInput(g[count]);
     }
