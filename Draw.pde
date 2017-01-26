@@ -440,6 +440,18 @@ void draw()
   oscP5.send(Play, myRemoteLocation); 
   //println(Play);
 
+  OscMessage NeuroX = new OscMessage("/neuro/x");
+  NeuroX.add(mixMixerX);
+  oscP5.send(NeuroX, myRemoteLocation);
+
+  OscMessage NeuroY = new OscMessage("/neuro/y");
+  NeuroY.add(mixMixerY);
+  oscP5.send(NeuroY, myRemoteLocation);
+
+  OscMessage NeuroZ = new OscMessage("/neuro/z");
+  NeuroZ.add(mixMixerZ);
+  oscP5.send(NeuroZ, myRemoteLocation);
+
 
   //draw audio waveform - adapted from Beads library sample code
   //note addition of scaling, shift and contraints 
